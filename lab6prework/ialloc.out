@@ -1,0 +1,7 @@
+ninodes=184 nblocks=1440 nfreeInodes=150 nfreeBlocks=1389
+imap = 9
+allocated ino = 35
+allocated ino = 36
+allocated ino = 37
+allocated ino = 38
+allocated ino = 39

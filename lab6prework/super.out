@@ -1,0 +1,15 @@
+s_magic = ef53
+EXT2 FS OK
+s_inodes_count = 184
+s_blocks_count = 1440
+s_free_inodes_count = 165
+s_free_blocks_count = 1389
+s_first_data_blcok = 1
+s_log_block_size = 0
+s_blocks_per_group = 8192
+s_inodes_per_group = 184
+s_mnt_count = 1
+s_max_mnt_count = -1
+s_magic = ef53
+s_mtime = Wed Oct 24 19:00:19 2018
+s_wtime = Wed Oct 24 19:00:19 2018
