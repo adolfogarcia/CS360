@@ -1,0 +1,66 @@
+Name: .
+inode: 2
+rec_len: 12
+name_len: 1
+file_type: 2
+
+Name: ..
+inode: 2
+rec_len: 12
+name_len: 2
+file_type: 2
+
+Name: lost+found
+inode: 11
+rec_len: 20
+name_len: 10
+file_type: 2
+
+Name: dir1
+inode: 12
+rec_len: 12
+name_len: 4
+file_type: 2
+
+Name: dir2
+inode: 13
+rec_len: 12
+name_len: 4
+file_type: 2
+
+Name: dir3
+inode: 14
+rec_len: 12
+name_len: 4
+file_type: 2
+
+Name: dir4
+inode: 15
+rec_len: 12
+name_len: 4
+file_type: 2
+
+Name: file1
+inode: 16
+rec_len: 16
+name_len: 5
+file_type: 1
+
+Name: file2
+inode: 17
+rec_len: 16
+name_len: 5
+file_type: 1
+
+Name: file3
+inode: 18
+rec_len: 16
+name_len: 5
+file_type: 1
+
+Name: file4
+inode: 19
+rec_len: 884
+name_len: 5
+file_type: 1
+
