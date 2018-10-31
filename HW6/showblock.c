@@ -3,7 +3,6 @@
 #include <ext2fs/ext2_fs.h>
 #include <unistd.h>
 #include <string.h>
-
 #define BLKSIZE 1024
 
 // define shorter TYPES, save typing efforts
