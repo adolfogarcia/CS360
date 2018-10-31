@@ -29,7 +29,6 @@ int get_block(int fd, int blk, char buf[ ])
 /// whhy do we even need this
 int search(INODE *ip, char *name)
 {
-
     char buf[BLKSIZE];
     char dirname[EXT2_NAME_LEN];
     // int block0 = ip->i_block[0];
