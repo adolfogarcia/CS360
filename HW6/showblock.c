@@ -212,5 +212,6 @@ int main(int argc, char *argv[])
         ip = (INODE*)ibuf + offset;
     }
 
+
     printInfo(ip);
 }
