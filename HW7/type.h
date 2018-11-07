@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
-
+#include <string.h>
 #include <ext2fs/ext2_fs.h>
 #include <string.h>
 #include <libgen.h>
@@ -57,6 +57,7 @@ typedef struct proc{
   OFT         *fd[NFD];
 }PROC;
 
+
 extern MINODE minode[NMINODE];
 extern MINODE *root;
 extern PROC   proc[NPROC], *running;
@@ -65,12 +66,14 @@ extern char *name[64];
 extern int n;
 extern int fd, dev;
 extern int nblocks, ninodes, bmap, imap, inode_start;
-extern char line[256], cmd[32], pathname[256];
+extern char line[256], cmd[32], pathname[256], command[128];
 
-int get_block(int fd, int blk, char buf[ ]);
-int put_block(int fd, int blk, char buf[ ]);
+ int get_block(int fd, int blk, char buf[ ]);
+ int put_block(int fd, int blk, char buf[ ]);
 
-int tokenize(char *pathname);
-MINODE *iget(int dev, int ino);
-int iput(MINODE *mip) ;
-int getino(MINODE *mp, char *pathname);
+ int tokenize(char *pathname);
+ MINODE *iget(int dev, int ino);
+ int iput(MINODE *mip) ;
+ int getino(MINODE * mip,char *pathname);
+
+int search(MINODE *mip, char *name);

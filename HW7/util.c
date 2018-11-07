@@ -13,11 +13,12 @@ extern char *name[64]; // assume at most 64 components in pathnames
 
 /**** globals defined in main.c file ****/
 
-
 int get_block(int fd, int blk, char buf[ ])
 {
+
   lseek(fd,(long)blk*BLKSIZE, 0);
    read(fd, buf, BLKSIZE);
+
 }
 
 int put_block(int fd, int blk, char buf[ ])
@@ -28,6 +29,7 @@ int put_block(int fd, int blk, char buf[ ])
 
 int tokenize(char *pathname)
 {
+    printf("tokenizing!\n");
     //decompose pathanme into token strings pointed by
     //      name[0], name[1], ..., name[n-1] 
     //return n = number of token strings
@@ -53,7 +55,8 @@ int tokenize(char *pathname)
 
 MINODE *iget(int dev, int ino)
 {
-    printf("iget(%d %d): ", dev, ino);
+    //printf("iget()\n");
+    printf("iget(%d %d)\n ", dev, ino);
     MINODE * mip;
     int i;
   // return minode pointer to loaded INODE
@@ -63,15 +66,16 @@ MINODE *iget(int dev, int ino)
        if found: inc its refCount by 1;
                  return pointer to this minode;*/
     for ( i=0; i < NMINODE; i++){
-        if(minode[i].refCount > 0)
-        {
+        // if(minode[i].refCount > 0)
+        // {
             if(minode[i].dev == dev && minode[i].ino == ino)
             {
                 minode[i].refCount++;
                 printf("found INODE=[%d %d] at minode[%d], return adr\n", dev, ino, i);
+                printf("refCount: %d\n", minode[i].refCount);
                 return &minode[i];
             }
-        }
+        //      }
     }
 
   /*(2). // needed entry not in memory:
@@ -81,10 +85,12 @@ MINODE *iget(int dev, int ino)
     for ( i=0; i < NMINODE; i++){
         if(minode[i].refCount == 0)
         {
-            minode[i].refCount == 1;
+            minode[i].refCount = 1;
             mip = &minode[i];
+            printf("MIP refcount: %d\n", mip->refCount);
             mip->dev = dev;
             mip->ino = ino;
+            break;
         }
     }
 
@@ -111,11 +117,13 @@ MINODE *iget(int dev, int ino)
     mip->INODE = *ip;  // copy INODE to mp->INODE
 
     printf("load INODE=[%d %d] into minode[%d]\n", dev, ino, i);
+    printf("minode[i] refCount: %d\n", mip->refCount);
     return mip;
 }
 
 int iput(MINODE *mip) // dispose a used minode by mip
 {
+    printf("iput()\n");
     char buf[BLKSIZE];
     get_block(dev, 2, buf);
     GD* gp = (GD *)buf;
@@ -135,54 +143,60 @@ int iput(MINODE *mip) // dispose a used minode by mip
     *ip = mip->INODE;
     put_block(dev, pos, buf);
 
-
+    
 } 
 
-// int search(MINODE *ip, char *name)
-// {
-//     char buf[BLKSIZE];
-//     char dirname[EXT2_NAME_LEN];
-//     // int block0 = ip->i_block[0];
-//     // get_block(fd, block0, buf);
-//     char* cp;
-//     DIR * dp;
-//   //  dev = fd;
+int search(MINODE *ip, char *name)
+{
+    printf("search()\n");
+    char buf[BLKSIZE];
+    char dirname[EXT2_NAME_LEN];
+    // int block0 = ip->i_block[0];
+    // get_block(fd, block0, buf);
+    char* cp;
+    DIR * dp;
+  //  dev = fd;
 
-//     int i  = 0;
-//     for(i = 0; i < 12; i++)
-//     {
-//         if(ip->INODE.i_block[i] == 0)
-//             break;
-//         get_block(dev, ip->INODE.i_block[i], buf);
-//         dp = (DIR *) buf;
-//         cp = buf;
+    int i  = 0;
+    for(i = 0; i < 12; i++)
+    {
+        if(ip->INODE.i_block[i] == 0)
+        {
+            printf("No more blocks! %s not found!\n", name);
+            break;
+        }
 
-//         while(cp < buf +  1024)
-//         {
-//             dirname[EXT2_NAME_LEN];
-//             strcpy(dirname, dp->name);
-//             dirname[dp->name_len] = '\0';
-//             printf("Dir : %s\n ", dirname);
-//             printf("Name to find: %s\n", name);
+        get_block(dev, ip->INODE.i_block[i], buf);
+        dp = (DIR *) buf;
+        cp = buf;
 
-//             if(strcmp(dirname, name) == 0)
-//             {
-//                 printf("\nFOUND!\n");
-//                 return dp->inode;
-//             }
+        while(cp < buf +  1024)
+        {
+            dirname[EXT2_NAME_LEN];
+            strcpy(dirname, dp->name);
+            dirname[dp->name_len] = '\0';
+            printf("Dir : %s\n ", dirname);
+            printf("Name to find: %s\n", name);
 
-//             cp += dp->rec_len;
-//             dp = (DIR*) cp;
+            if(strcmp(dirname, name) == 0)
+            {
+                printf("\nFOUND!\n");
+                return dp->inode;
+            }
 
-//         }
-//     }
-//     return 0;
-// }
+            cp += dp->rec_len;
+            dp = (DIR*) cp;
+
+        }
+    }
+    return 0;
+}
 
 
 // retrun inode number of pathname
-int getino(MINODE *mp, char *pathname)
+int getino(MINODE * mip, char *pathname)
 { 
+    printf("getino()\n");
    // SAME as LAB6 program: just return the pathname's ino;
     char buf[BLKSIZE], temp[BLKSIZE];
     char* cp;
@@ -190,14 +204,16 @@ int getino(MINODE *mp, char *pathname)
 
     int n = tokenize(pathname);
     
-    get_block(fd, 2, buf);
+    get_block(dev, 2, buf);
     GD* gp = (GD *)buf;
     int inode_start = gp->bg_inode_table; 
- 
+    get_block(dev, inode_start, buf);
+    INODE* startNode = (INODE*) buf + 1;
+
     int ino, blk, offset, i;
     for(i = 0; i < n; i++)
     {
-        get_block(dev, mp->INODE.i_block[0], buf);
+        get_block(dev, mip->INODE.i_block[0], buf);
         dp = (DIR *)buf; //set the dir
         cp = buf; //set the cp
         while (cp < buf + BLKSIZE)
@@ -224,5 +240,5 @@ int getino(MINODE *mp, char *pathname)
             dp = (DIR *) cp;
         }
     }
-    return  ip;
+    return  0;
 }
