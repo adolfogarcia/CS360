@@ -48,7 +48,7 @@ int mount_root()
 {
     printf("mount_root()\n");
     char buf[BLKSIZE];
-    // open device for RW (get a file descriptor as dev for the opened device)
+   // open device for RW (get a file descriptor as dev for the opened device)
     dev = open("mydisk", O_RDWR);
     fd = dev;
     printf("dev: %d\n",dev);
@@ -118,19 +118,19 @@ int main()
         {
             ls_dir(cmdArr[1]);
         }
-        else
+        if(strcmp(cmdArr[0], "pwd") == 0)
         {
-            puts("poopy");
+            pwd(running->cwd);
+        }
+        if(strcmp(cmdArr[0], "cd") == 0)
+        {
+            chdir(cmdArr[1]);
+        }
+        if(strcmp(cmdArr[0], "quit") == 0)
+        {
+            chdir(cmdArr[1]);
         }
 
-    // //  cmd=ls:
-    //         ls(pathname);
-    // //  cmd=cd:
-    //         chdir(pathname);
-    // //  cmd=pwd
-    //         pwd(running->cwd)
-    //     cmd=quit
-    //         quit();
 
          memset(command, 0, 100);
     }

@@ -29,6 +29,7 @@ int put_block(int fd, int blk, char buf[ ])
 
 int tokenize(char *pathname)
 {
+    char c[100], f[100];
     printf("tokenizing!\n");
     //decompose pathanme into token strings pointed by
     //      name[0], name[1], ..., name[n-1] 
@@ -36,19 +37,26 @@ int tokenize(char *pathname)
 
     int tokenCount = 0;
     char *s;
-    s = strtok(pathname, "/");  // first call to strtok()
 
-    if(!s)
-    {
-        return 0;
-    }
+   
+        s = strtok(pathname, "/");  // first call to strtok()
+        printf("token: %s\n", s);
+        if(!s)
+        {
+            return 0;
+        }
 
-    while(s)
-    {
-        name[tokenCount] = s;
-        tokenCount++;
-        s = strtok(0, "/");  // call strtok() until it returns NULL
-    }
+        while(s)
+        {
+            name[tokenCount] = s;
+            tokenCount++;
+            s = strtok(0, "/");  // call strtok() until it returns NULL
+            printf("token: %s\n", s);
+            // fgets(f, 128, stdin);
+            // memset(f, 0, 100);
+        }
+
+    //}
 
     return tokenCount;
 }
@@ -148,7 +156,7 @@ int iput(MINODE *mip) // dispose a used minode by mip
 
 int search(MINODE *ip, char *name)
 {
-    printf("search()\n");
+    printf("search() looking for %s\n", name);
     char buf[BLKSIZE];
     char dirname[EXT2_NAME_LEN];
     // int block0 = ip->i_block[0];
@@ -175,12 +183,12 @@ int search(MINODE *ip, char *name)
             dirname[EXT2_NAME_LEN];
             strcpy(dirname, dp->name);
             dirname[dp->name_len] = '\0';
-            // printf("Dir : %s\n ", dirname);
+         //   printf("Dir : %s\n ", dirname);
             // printf("Name to find: %s\n", name);
 
             if(strcmp(dirname, name) == 0)
             {
-                printf("\nFOUND!\n");
+            //    printf("\nFOUND! i value: %d\n", i);
                 return dp->inode;
             }
 
@@ -213,7 +221,7 @@ int getino(char *pathname)
     int ino = 0, blk, offset, i;
     for(i = 0; i < n; i++)
     {
-        printf("looking for %s!\n", name[i]);
+      //  printf("looking for %s!\n", name[i]);
         ino = search(ip, name[i]);
         if (ino==0){
                 printf("can't find %s\n", name[i]);
@@ -245,16 +253,16 @@ int getino(char *pathname)
         //     memset(temp, 0, 100);
         //     cp += dp->rec_len;
         //     dp = (DIR *) cp;
-        
+        ip = iget(dev, ino);
     }
-    if(ino != 0)
-        puts("found ino!");
+    // if(ino != 0)
+    //     puts("found ino!");
     return  ino;
 }
 
 void printDir(INODE ip)
 {
-    printf("in printDir!\n");
+    printf("PrintDir!\n");
     char buf[BLKSIZE];
     char dirname[EXT2_NAME_LEN];
     // int block0 = ip->i_block[0];
@@ -281,7 +289,7 @@ void printDir(INODE ip)
             dirname[EXT2_NAME_LEN];
             strcpy(dirname, dp->name);
             dirname[dp->name_len] = '\0';
-            printf("Dir : %s\n", dirname);
+            printf("%s\n", dirname);
             //printf(" %4d %4d %4d %s\n", dp->inode, dp->rec_len, dp->name_len, dirname);
         
             cp += dp->rec_len;
@@ -302,32 +310,149 @@ int ls_dir(char* dirname)
     
     if(!dirname)
     {
-        MINODE *  mip = root;
+        MINODE *  mip = running->cwd;
         printDir(mip->INODE);
     }
   
     else
     {
+        //printf("GONNA LOOK for %s\n", name[1]);
+     
         int ino = getino(dirname);
+        //printf("INO: %d\n", ino);
+        if(ino <= 0)
+        {
+            printf("%s Not found!!!!\n", name[1]);
+            return;
+        }
+
         MINODE* mip = iget(dev, ino);
         printDir(mip->INODE);
-        // get_block(dev, mip->INODE.i_block[0], buf);
-        // DIR* dp = (DIR*) buf;
-
-        // while(cp < buf +  1024)
-        // {
-        //     dirname[EXT2_NAME_LEN];
-        //     strcpy(dirname, dp->name);
-        //     dirname[dp->name_len] = '\0';
-        //     printf("Dir : %s\n", dirname);
-        //     printf(" %4d %4d %4d %s\n", dp->inode, dp->rec_len, dp->name_len, dirname);
-        
-        //     cp += dp->rec_len;
-        //     dp = (DIR*) cp;
-        //  memset(dirname, 0, 100);
-        // }
+      
     }
 
-    // return;
+     return;
 }
 
+int chdir(char* dirname)
+{
+    MINODE* mip = running->cwd;
+    int ino = 0;
+
+    if(dirname)
+    {
+        ino = search(mip,dirname);
+        //printf("INO: %d\n", ino);
+        if(ino > 0)
+        {
+            mip = iget(dev, ino);
+
+            iput(running->cwd);
+            running->cwd = mip;
+        }
+        
+    }
+    else
+    {
+        iput(running->cwd);
+        running->cwd = root;
+    }
+}
+
+int rpwd(MINODE * wd)
+{
+    if(wd == root)
+    {
+        return 0;
+    }
+
+    char buf[BLKSIZE], dirname[BLKSIZE];
+    //char name[BLKSIZE];
+    int my_ino = 0, parent_ino = 0;
+    get_block(dev, wd->INODE.i_block[0], buf);
+    DIR* dp = (DIR *) buf;
+    char* cp = buf;
+
+    while(cp < buf +  1024)
+    {
+        dirname[EXT2_NAME_LEN];
+        strcpy(dirname, dp->name);
+        dirname[dp->name_len] = '\0';
+         printf("Dir : %s\n ", dirname);
+        // printf("Name to find: %s\n", name);
+
+        if(strcmp(dirname, ".") == 0)
+        {
+          
+            my_ino = dp->inode;
+            //  printf("\my_ino found! %d\n", my_ino);
+        }
+        if(strcmp(dirname, "..") == 0)
+        {
+            
+            parent_ino = dp->inode;
+            // printf("\n parent_ino found! %d\n", parent_ino);
+        }
+
+        cp += dp->rec_len;
+        dp = (DIR*) cp;
+    }
+    MINODE* pip =iget(dev, parent_ino);
+    get_block(dev, pip->INODE.i_block[0], buf);
+    dp = (DIR *) buf;
+    cp = buf;
+
+    ///loop searching for my_ino == dp->inode
+    while(cp < buf +  1024)
+    {
+       // printf("Looping!");
+         dirname[EXT2_NAME_LEN];
+        strcpy(dirname, dp->name);
+        dirname[dp->name_len] = '\0';
+       //  printf("Dir : %s\n ", dirname);
+        // printf("Name to find: %s\n", name);
+
+        if(dp->inode == my_ino)
+        {
+            //printf("FOUND MY_INO\n");
+            break;
+        }
+        cp += dp->rec_len;
+        dp = (DIR*) cp;
+    }
+
+    // strcpy(dirname, dp->name);
+    // dirname[dp->name_len] = '\0';
+    // printf("DIRNAME: %s\n", dirname);
+
+    pip =iget(dev, parent_ino);
+    rpwd(pip);
+
+    printf("/%s", dirname);
+}
+
+int pwd(MINODE *wd)
+{
+    if(wd == root)
+    {
+        printf("/");
+    }
+    else
+        rpwd(wd);
+    printf("\n");
+}
+
+int quit()
+{
+    int i =0;
+    for ( i=0; i < NMINODE; i++){
+        // if(minode[i].refCount > 0)
+        // {
+            if(minode[i].refCount > 0 && minode[i].dirty)
+            {
+                iput(&minode[i]);
+            }
+        //      }
+    }
+    exit(0);
+}
