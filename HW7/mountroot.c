@@ -9,7 +9,8 @@
  int n;
  int fd, dev;
  int nblocks, ninodes, bmap, imap, inode_start;
- char line[256], cmd[32], pathname[256], command[128];
+ char line[256], pathname[256], command[128];
+ char * cmdArr[100];
 
 int init()
 {
@@ -100,9 +101,27 @@ int main()
 
     while(1){
     //  ask for a command line = "cmd [pathname]"
+        
         printf("Enter a command : [ls|cd|pwd|quit]\n");
         fgets(command, 128, stdin);
         command[strlen(command) -1] = 0; // kill \n at end of line
+        
+        char * s;
+        int i  = 0;
+
+        s = strtok(command, " ");
+        cmdArr[0] = s;
+        s = strtok(NULL, " ");
+        cmdArr[1] = s;
+
+        if(strcmp(cmdArr[0], "ls") == 0)
+        {
+            ls_dir(cmdArr[1]);
+        }
+        else
+        {
+            puts("poopy");
+        }
 
     // //  cmd=ls:
     //         ls(pathname);
@@ -112,5 +131,7 @@ int main()
     //         pwd(running->cwd)
     //     cmd=quit
     //         quit();
+
+         memset(command, 0, 100);
     }
 }
