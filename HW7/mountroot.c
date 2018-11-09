@@ -124,11 +124,12 @@ int main()
         }
         if(strcmp(cmdArr[0], "cd") == 0)
         {
-            chdir(cmdArr[1]);
+            cd(cmdArr[1]);
         }
         if(strcmp(cmdArr[0], "quit") == 0)
         {
-            chdir(cmdArr[1]);
+            quit();
+        
         }
 
 

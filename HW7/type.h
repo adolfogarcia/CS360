@@ -7,6 +7,8 @@
 #include <libgen.h>
 #include <sys/stat.h>
 
+#include <unistd.h>
+
 #define BLKSIZE  1024
 
 #define NMINODE    64
@@ -79,4 +81,5 @@ extern char line[256],  pathname[256], command[128];
 int search(MINODE *mip, char *name);
 int ls_dir(char* dirname);
 int pwd(MINODE *wd);
-int chdir(char* dirname);
+int cd(char* dirname);
+int quit();
